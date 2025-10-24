@@ -202,6 +202,17 @@ export interface ApiResponse<T = any> {
   error?: string
 }
 
+// user profile types
+export interface UserProfile {
+  display_name: string | null
+  profile_image_url?: string | null
+  about?: string | null
+  interests?: string[] | null
+  current_courses?: string[] | null
+  created_at?: Date
+  updated_at?: Date
+}
+
 // Auth request types
 export interface SignupRequest {
   name: string
