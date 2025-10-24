@@ -15,6 +15,16 @@ export interface User {
   role: "student" | "admin"
   created_at: string
 }
+// user profile types
+export interface UserProfile {
+  display_name: string | null
+  profile_image_url?: string | null
+  about?: string | null
+  interests?: string[] | null
+  current_courses?: string[] | null
+  created_at?: string
+  updated_at?: string
+}
 
 export interface AuthResponse {
   token: string
@@ -213,6 +223,14 @@ export interface SignupForm {
   email: string
   password: string
   confirmPassword: string
+}
+// user profile form types
+export interface UpdateProfileForm {
+  display_name?: string
+  profile_image_url?: string
+  about?: string
+  interests?: string[] | string
+  current_courses?: string[] | string
 }
 
 export interface ResetPasswordForm {

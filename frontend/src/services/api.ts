@@ -4,6 +4,7 @@ import type {
   ApiResponse,
   AuthResponse,
   User,
+  UserProfile,
   Course,
   Note,
   Review,
@@ -15,6 +16,8 @@ import type {
   JobComment,
   Event,
   Club,
+  ClubMember,
+  ClubPost,
 } from "@/types"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
@@ -86,6 +89,29 @@ export const authAPI = {
 
   updateProfile: async (data: { name: string }): Promise<ApiResponse<{ user: User }>> => {
     const response: AxiosResponse<ApiResponse<{ user: User }>> = await api.put("/auth/profile", data)
+    return response.data
+  },
+}
+
+// user profile API, get and update student profiles
+export const userAPI = {
+  // get user profile
+  getMyProfile: async (): Promise<ApiResponse<{ user: User; profile: UserProfile }>> => {
+    const response: AxiosResponse<ApiResponse<{ user: User; profile: UserProfile }>> = await api.get("/users/me")
+    return response.data
+  },
+  // update user profile
+  updateMyProfile: async (
+    data: Partial<UserProfile>,
+  ): Promise<ApiResponse<{ profile: UserProfile }>> => {
+    const response: AxiosResponse<ApiResponse<{ profile: UserProfile }>> = await api.put("/users/me", data)
+    return response.data
+  },
+  // view different users profile
+  getUserPublicProfile: async (
+    id: string,
+  ): Promise<ApiResponse<{ user: Pick<User, "id" | "name" | "verified" | "role" | "created_at">; profile: UserProfile }>> => {
+    const response: AxiosResponse<ApiResponse<{ user: any; profile: UserProfile }>> = await api.get(`/users/${id}`)
     return response.data
   },
 }
