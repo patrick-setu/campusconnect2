@@ -105,7 +105,10 @@ export const Header: React.FC = () => {
               <div className="flex items-center space-x-4">
                 <div className="hidden md:flex items-center space-x-2">
                   <User className="w-4 h-4 text-white/80" />
-                  <span className="text-sm text-white/90">{user.name}</span>
+                  {/* profile link */}
+                  <Link href="/profile" className="text-sm text-white/90 hover:underline">
+                    {user.name}
+                  </Link>
                   {user.role === "admin" && (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 text-white backdrop-blur-sm">
                       Admin User
@@ -180,6 +183,10 @@ export const Header: React.FC = () => {
               })}
               {user && (
                 <div className="pt-2 border-t border-white/20">
+                  {/* profile and logout links */}
+                  <Link href="/profile" className="block px-3 py-2 text-sm text-white/90 hover:underline" onClick={() => setMobileMenuOpen(false)}>
+                    View profile
+                  </Link>
                   <div className="px-3 py-2 text-sm text-white/70">Signed in as {user.name}</div>
                   <button
                     onClick={handleLogout}
