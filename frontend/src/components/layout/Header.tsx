@@ -69,7 +69,7 @@ export const Header: React.FC = () => {
     : []
 
   return (
-    <header className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 backdrop-blur-lg border-b border-blue-500/20 shadow-lg">
+    <header className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 backdrop-blur-lg border-b border-blue-500/20 shadow-lg responsive-header">
       <div className="max-w-7xl pl-6 pr-4 sm:pl-8 sm:pr-6 lg:pl-12 lg:pr-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -83,17 +83,17 @@ export const Header: React.FC = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden lg:flex items-center space-x-4">
             {navigation.map((item) => {
               const Icon = item.icon
               return (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="flex items-center space-x-1 text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300 backdrop-blur-sm"
+                  className="flex items-center space-x-1 text-white/90 hover:text-white hover:bg-white/10 px-2 py-1.5 rounded-lg transition-all duration-300 backdrop-blur-sm"
                 >
                   <Icon className="w-4 h-4" />
-                  <span>{item.name}</span>
+                  <span className="text-sm">{item.name}</span>
                 </Link>
               )
             })}
