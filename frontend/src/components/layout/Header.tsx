@@ -20,6 +20,7 @@ import {
   DollarSign,
   Briefcase,
   Calendar,
+  ShoppingCart,
 } from "lucide-react"
 
 // ADDED: Custom HouseHeart icon component
@@ -65,12 +66,13 @@ export const Header: React.FC = () => {
         { name: "Jobs/Voluntary", href: "/jobs", icon: Briefcase },
         { name: "Events", href: "/events", icon: Calendar },
         { name: "Clubs", href: "/clubs", icon: HouseHeart },
+        { name: "Marketplace", href: "/marketplace", icon: ShoppingCart },
       ]
     : []
 
   return (
     <header className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 backdrop-blur-lg border-b border-blue-500/20 shadow-lg responsive-header">
-      <div className="max-w-7xl pl-6 pr-4 sm:pl-8 sm:pr-6 lg:pl-12 lg:pr-8">
+      <div className="w-full pl-6 pr-4 sm:pl-8 sm:pr-6 lg:pl-12 lg:pr-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
