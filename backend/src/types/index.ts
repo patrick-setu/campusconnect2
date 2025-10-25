@@ -189,6 +189,21 @@ export interface JobComment {
   commenter_name?: string
 }
 
+// Marketplace types 
+export interface MarketplacePost {
+  id: string
+  creator_id: string
+  title: string
+  description: string
+  price?: string
+  category: 'selling' | 'lost' | 'buying'
+  contact: string
+  image_url?: string
+  created_at: Date
+  // Additional fields from joins
+  creator_name?: string
+}
+
 // Request types
 export interface AuthenticatedRequest extends Request {
   user?: UserPayload
@@ -324,4 +339,14 @@ export interface CreateJobRequest {
 // Job comment request types (NEW)
 export interface CreateJobCommentRequest {
   comment_text: string
+}
+
+// Marketplace request types (NEW)
+export interface CreateMarketplacePostRequest {
+  title: string
+  description: string
+  price?: string
+  category: 'selling' | 'lost' | 'buying'
+  contact: string
+  image_url?: string
 }

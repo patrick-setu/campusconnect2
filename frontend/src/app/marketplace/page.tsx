@@ -22,7 +22,6 @@ export default function MarketplacePage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Simulate loading for now
     const timer = setTimeout(() => setLoading(false), 1000)
     return () => clearTimeout(timer)
   }, [])
@@ -31,13 +30,12 @@ export default function MarketplacePage() {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="animate-pulse space-y-8">
+            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-48 bg-gray-200 rounded"></div>
-              ))}
+                <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>           ))}
             </div>
           </div>
         </div>
@@ -55,7 +53,7 @@ export default function MarketplacePage() {
             <h1 className="text-3xl font-bold text-gray-900">Marketplace</h1>
           </div>
           <p className="text-gray-600 text-lg">
-            Buy, sell, and trade items with fellow AUT students. Share lost & found items too!
+            Buy and sell items with other students and share lost items 
           </p>
         </div>
 

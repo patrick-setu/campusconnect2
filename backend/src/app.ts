@@ -19,6 +19,7 @@ import jobRoutes from "@/routes/jobs" // Added jobs routes
 import eventRoutes from "@/routes/events" // Added events routes
 import clubsRouter from "./routes/clubs";  // Added clubs routes
 import userRoutes from "@/routes/users" // add user routes
+import marketplaceRoutes from "@/routes/marketplace" // Added marketplace routes
 
 
 // Load environment variables
@@ -79,6 +80,7 @@ app.use("/api/jobs", jobRoutes) // Added jobs API route
 app.use("/api/events", eventRoutes) // Added events API route
 app.use("/api/clubs", clubsRouter); // Added clubs API route
 app.use("/api/users", userRoutes) // add user api route
+app.use("/api/marketplace", marketplaceRoutes) // Added marketplace API route
 
 // 404 handler
 app.use("*", (req, res) => {
