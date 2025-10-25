@@ -95,7 +95,7 @@ export const Header: React.FC = () => {
                   className="flex items-center space-x-1 text-white/90 hover:text-white hover:bg-white/10 px-2 py-1.5 rounded-lg transition-all duration-300 backdrop-blur-sm"
                 >
                   <Icon className="w-4 h-4" />
-                  <span className="text-sm">{item.name}</span>
+                  <span className="text-white/90" style={{ fontSize: '12px' }}>{item.name}</span>
                 </Link>
               )
             })}
@@ -108,7 +108,7 @@ export const Header: React.FC = () => {
                 <div className="hidden md:flex items-center space-x-2">
                   <User className="w-4 h-4 text-white/80" />
                   {/* profile link */}
-                  <Link href="/profile" className="text-sm text-white/90 hover:underline">
+                  <Link href="/profile" className="text-white/90 hover:underline" style={{ fontSize: '12px' }}>
                     {user.name}
                   </Link>
                   {user.role === "admin" && (
@@ -127,6 +127,7 @@ export const Header: React.FC = () => {
                   size="sm"
                   onClick={handleLogout}
                   className="text-white hover:bg-white/10 border border-white/20 backdrop-blur-sm"
+                  style={{ fontSize: '12px' }}
                 >
                   <LogOut className="w-4 h-4 mr-1" />
                   Logout
