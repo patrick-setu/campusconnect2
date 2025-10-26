@@ -4,6 +4,7 @@ import fs from "fs"
 import archiver from "archiver"
 import pool from "@/config/database"
 import type { AuthenticatedRequest, ApiResponse, CreateNoteRequest } from "@/types"
+import { BadgeService } from "@/services/badgeService"
 
 export class NoteController {
   static async getNotes(req: Request, res: Response<ApiResponse>): Promise<void> {
@@ -103,10 +104,13 @@ export class NoteController {
 
       const note = result.rows[0]
 
+      // Check for new badges after uploading note
+      const newBadges = await BadgeService.checkAndAwardBadges(userId, 'notes');
+
       res.status(201).json({
         success: true,
         message: "Note uploaded successfully and is now available to all students!",
-        data: { note },
+        data: { note, newBadges },
       })
     } catch (error) {
       console.error("Create note error:", error)

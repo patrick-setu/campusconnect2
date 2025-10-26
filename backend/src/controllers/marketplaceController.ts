@@ -1,6 +1,7 @@
 import type { Request, Response } from "express"
 import pool from "@/config/database"
 import type { AuthenticatedRequest, ApiResponse } from "@/types"
+import { BadgeService } from "@/services/badgeService"
 
 export class MarketplaceController {
   // GET marketplace posts
@@ -50,10 +51,13 @@ export class MarketplaceController {
 
       const post = result.rows[0]
 
+      // Check for new badges after creating marketplace post
+      const newBadges = await BadgeService.checkAndAwardBadges(creatorId, 'marketplace');
+
       res.status(201).json({
         success: true,
         message: "Marketplace post created successfully",
-        data: { post },
+        data: { post, newBadges },
       })
     } catch (error) {
       console.error("Create marketplace post error:", error)
