@@ -16,8 +16,18 @@ export default async function PublicProfilePage({ params }: Props) {
   const res = await fetch(`${base}/api/users/${params.id}`, { cache: "no-store" });
   const data = await res.json();
   
-  if (!data?.success) {
-    return <div className="max-w-3xl mx-auto p-6">User not found</div>;
+  // handle private or non existent profiles
+  if (!data?.success || !data.data.profile) {
+    return (
+      <Layout>
+        <div className="max-w-3xl mx-auto p-6">
+          <Card className="p-6 text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Profile Not Available</h2>
+            <p className="text-gray-600">This profile is either private or does not exist.</p>
+          </Card>
+        </div>
+      </Layout>
+    );
   }
   const user = data.data.user as { id: string; name: string; created_at: string };
   const profile = (data.data.profile || null) as UserProfile | null;

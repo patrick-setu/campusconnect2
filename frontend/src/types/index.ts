@@ -22,6 +22,7 @@ export interface UserProfile {
   about?: string | null
   interests?: string[] | null
   current_courses?: string[] | null
+  is_public?: boolean
   created_at?: string
   updated_at?: string
 }
@@ -231,6 +232,7 @@ export interface UpdateProfileForm {
   about?: string
   interests?: string[] | string
   current_courses?: string[] | string
+  is_public?: boolean
 }
 
 export interface ResetPasswordForm {

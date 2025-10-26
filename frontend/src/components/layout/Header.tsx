@@ -1,12 +1,13 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/Button"
 import Image from "next/image"
+import { userAPI } from "@/services/api"
 import {
   User,
   LogOut,
@@ -48,6 +49,22 @@ export const Header: React.FC = () => {
   const { user, logout } = useAuth()
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [profileImage, setProfileImage] = useState<string | null>(null)
+
+  // fetch user's profile picture when they log in
+  useEffect(() => {
+    if (user) {
+      userAPI.getMyProfile().then((res) => {
+        if (res.success && res.data?.profile?.profile_image_url) {
+          setProfileImage(res.data.profile.profile_image_url)
+        }
+      }).catch(() => {
+        setProfileImage(null)
+      })
+    } else {
+      setProfileImage(null)
+    }
+  }, [user])
 
   const handleLogout = () => {
     logout()
@@ -102,31 +119,45 @@ export const Header: React.FC = () => {
           </nav>
 
           {/* User Menu */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 shrink-0">
             {user ? (
-              <div className="flex items-center space-x-4">
-                <div className="hidden md:flex items-center space-x-2">
-                  <User className="w-4 h-4 text-white/80" />
-                  {/* profile link */}
-                  <Link href="/profile" className="text-white/90 hover:underline" style={{ fontSize: '12px' }}>
-                    {user.name}
+              <div className="flex items-center gap-4 min-w-0 flex-1">
+                <div className="hidden md:flex items-center gap-4 min-w-0 flex-1">
+                  {/* show profile picture or default icon */}
+                  <Link href="/profile" className="flex items-center gap-2 group min-w-0 flex-1">
+                    {profileImage ? (
+                      <img 
+                        src={profileImage} 
+                        alt={user.name}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-white/30 group-hover:border-white/50 transition-all duration-300"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/30 group-hover:border-white/50 transition-all duration-300">
+                        <User className="w-5 h-5 text-white/80" />
+                      </div>
+                    )}
+                    <span title={user.name} className="text-sm text-white/90 group-hover:text-white group-hover:underline transition-all duration-300 whitespace-nowrap truncate min-w-[6rem] max-w-[10rem] sm:max-w-[12rem] lg:max-w-[16rem]">
+                      {user.name || user.email || "Profile"}
+                    </span>
                   </Link>
-                  {user.role === "admin" && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 text-white backdrop-blur-sm">
-                      Admin User
-                    </span>
-                  )}
-                  {!user.verified && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-400/20 text-yellow-100 backdrop-blur-sm">
-                      Unverified
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {user.role === "admin" && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 text-white backdrop-blur-sm whitespace-nowrap">
+                        Admin
+                      </span>
+                    )}
+                    {!user.verified && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-400/20 text-yellow-100 backdrop-blur-sm whitespace-nowrap">
+                        Unverified
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleLogout}
-                  className="text-white hover:bg-white/10 border border-white/20 backdrop-blur-sm"
+                  className="text-white hover:bg-white/10 border border-white/20 backdrop-blur-sm shrink-0"
                   style={{ fontSize: '12px' }}
                 >
                   <LogOut className="w-4 h-4 mr-1" />
@@ -186,9 +217,20 @@ export const Header: React.FC = () => {
               })}
               {user && (
                 <div className="pt-2 border-t border-white/20">
-                  {/* profile and logout links */}
-                  <Link href="/profile" className="block px-3 py-2 text-sm text-white/90 hover:underline" onClick={() => setMobileMenuOpen(false)}>
-                    View profile
+                  {/* profile link with picture in mobile */}
+                  <Link href="/profile" className="flex items-center space-x-3 px-3 py-2 text-sm text-white/90 hover:bg-white/10 rounded-md transition-all duration-300" onClick={() => setMobileMenuOpen(false)}>
+                    {profileImage ? (
+                      <img 
+                        src={profileImage} 
+                        alt={user.name}
+                        className="w-8 h-8 rounded-full object-cover border-2 border-white/30"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/30">
+                        <User className="w-4 h-4 text-white/80" />
+                      </div>
+                    )}
+                    <span>View profile</span>
                   </Link>
                   <div className="px-3 py-2 text-sm text-white/70">Signed in as {user.name}</div>
                   <button
