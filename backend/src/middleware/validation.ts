@@ -209,8 +209,10 @@ export const createClubPostSchema = Joi.object({
 
 export const createMarketplacePostSchema = Joi.object({
   title: Joi.string().min(1).max(200).required(),
-  description: Joi.string().min(1).required(),
-  price: Joi.string().max(50).optional().allow(""),
+  description: Joi.string().min(1).max(2000).required(),
+  price: Joi.string().pattern(/^\d*\.?\d*$/).max(50).optional().allow("").messages({
+    "string.pattern.base": "Price must be a valid number"
+  }),
   category: Joi.string().valid("selling", "lost", "buying").required(),
   contact: Joi.string().min(1).max(255).required(),
   image_url: Joi.string().uri().max(500).optional().allow(""),
