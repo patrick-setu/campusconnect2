@@ -21,7 +21,7 @@ export class UserController {
 
       // check if extended profile info exists in table
       const profileRes = await pool.query(
-        "SELECT display_name, profile_image_url, about, interests, current_courses, created_at, updated_at FROM user_profiles WHERE user_id = $1",
+        "SELECT display_name, profile_image_url, about, interests, current_courses, is_public, created_at, updated_at FROM user_profiles WHERE user_id = $1",
         [userId],
       )
 
@@ -49,7 +49,7 @@ export class UserController {
   static async updateMyProfile(req: AuthenticatedRequest, res: Response<ApiResponse>): Promise<void> {
     try {
       const userId = req.user!.id
-      const { display_name, profile_image_url, about, interests, current_courses } = req.body || {}
+      const { display_name, profile_image_url, about, interests, current_courses, is_public } = req.body || {}
 
       // normalize arrays , allow comma separated strings 
       const normInterests = Array.isArray(interests)
@@ -65,8 +65,8 @@ export class UserController {
 
       // upsert, update if exists, insert if not
       const upsertSql = `
-        INSERT INTO user_profiles (user_id, display_name, profile_image_url, about, interests, current_courses)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO user_profiles (user_id, display_name, profile_image_url, about, interests, current_courses, is_public)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (user_id)
         DO UPDATE SET
           display_name = EXCLUDED.display_name,
@@ -74,8 +74,9 @@ export class UserController {
           about = EXCLUDED.about,
           interests = EXCLUDED.interests,
           current_courses = EXCLUDED.current_courses,
+          is_public = EXCLUDED.is_public,
           updated_at = CURRENT_TIMESTAMP
-        RETURNING display_name, profile_image_url, about, interests, current_courses, created_at, updated_at;
+        RETURNING display_name, profile_image_url, about, interests, current_courses, is_public, created_at, updated_at;
       `
 
       const profRes = await pool.query(upsertSql, [
@@ -85,6 +86,7 @@ export class UserController {
         about ?? null,
         normInterests.length ? normInterests : null,
         normCourses.length ? normCourses : null,
+        is_public ?? true, // default to true if not specified
       ])
 
       res.json({
@@ -112,8 +114,10 @@ export class UserController {
         res.status(404).json({ success: false, message: "User not found" })
         return
       }
+
+      // only show profile if it's public
       const profileRes = await pool.query(
-        "SELECT display_name, profile_image_url, about, interests, current_courses FROM user_profiles WHERE user_id = $1",
+        "SELECT display_name, profile_image_url, about, interests, current_courses FROM user_profiles WHERE user_id = $1 AND is_public = true",
         [id],
       )
       res.json({

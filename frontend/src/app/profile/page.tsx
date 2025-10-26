@@ -68,6 +68,12 @@ export default function ProfilePage() {
                   <Calendar className="w-4 h-4 mr-2" />
                   <span className="text-sm">Member since {new Date(user.created_at).toLocaleDateString()}</span>
                 </div>
+                {/* display profile visibility status */}
+                <div className="mt-2">
+                  <span className={`text-sm font-medium px-2 py-1 rounded ${profile?.is_public ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                    {profile?.is_public ? 'Public Profile' : 'Private Profile'}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -126,6 +132,7 @@ export default function ProfilePage() {
             display_name: form.display_name,
             profile_image_url: form.profile_image_url,
             about: form.about,
+            is_public: form.is_public,
             interests:
               typeof form.interests === "string"
                 ? form.interests.split(",").map((s) => s.trim()).filter(Boolean)
