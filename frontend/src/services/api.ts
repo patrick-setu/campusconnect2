@@ -18,6 +18,8 @@ import type {
   Club,
   ClubMember,
   ClubPost,
+  MarketplacePost,
+  MarketplacePostForm,
 } from "@/types"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
@@ -570,6 +572,25 @@ export const clubAPI = {
     return response.data;
   },
 }
+
+// Marketplace API
+export const marketplaceAPI = {
+  getPosts: async (): Promise<ApiResponse<{ posts: MarketplacePost[] }>> => {
+    const response: AxiosResponse<ApiResponse<{ posts: MarketplacePost[] }>> = await api.get("/marketplace")
+    return response.data
+  },
+
+  createPost: async (data: MarketplacePostForm): Promise<ApiResponse<{ post: MarketplacePost }>> => {
+    const response: AxiosResponse<ApiResponse<{ post: MarketplacePost }>> = await api.post("/marketplace", data)
+    return response.data
+  },
+
+  deletePost: async (id: string): Promise<ApiResponse> => {
+    const response: AxiosResponse<ApiResponse> = await api.delete(`/marketplace/${id}`)
+    return response.data
+  },
+}
+
 export default api
 //view button 
 export async function getClubById(clubId: string) {

@@ -21,6 +21,7 @@ import {
   DollarSign,
   Briefcase,
   Calendar,
+  ShoppingCart,
 } from "lucide-react"
 
 // ADDED: Custom HouseHeart icon component
@@ -82,13 +83,14 @@ export const Header: React.FC = () => {
         { name: "Jobs/Voluntary", href: "/jobs", icon: Briefcase },
         { name: "Events", href: "/events", icon: Calendar },
         { name: "Clubs", href: "/clubs", icon: HouseHeart },
+        { name: "Marketplace", href: "/marketplace", icon: ShoppingCart },
       ]
     : []
 
   return (
-    <header className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 backdrop-blur-lg border-b border-blue-500/20 shadow-lg">
-      <div className="max-w-7xl pl-6 pr-4 sm:pl-8 sm:pr-6 lg:pl-12 lg:pr-8">
-        <div className="flex justify-between items-center h-20">
+    <header className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 backdrop-blur-lg border-b border-blue-500/20 shadow-lg responsive-header">
+      <div className="w-full pl-6 pr-4 sm:pl-8 sm:pr-6 lg:pl-12 lg:pr-8">
+        <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2 group">
@@ -100,17 +102,17 @@ export const Header: React.FC = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8 mr-4 lg:mr-6 xl:mr-8">
+          <nav className="hidden lg:flex items-center space-x-4">
             {navigation.map((item) => {
               const Icon = item.icon
               return (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="flex items-center space-x-1 text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300 backdrop-blur-sm"
+                  className="flex items-center space-x-1 text-white/90 hover:text-white hover:bg-white/10 px-2 py-1.5 rounded-lg transition-all duration-300 backdrop-blur-sm"
                 >
                   <Icon className="w-4 h-4" />
-                  <span>{item.name}</span>
+                  <span className="text-white/90" style={{ fontSize: '12px' }}>{item.name}</span>
                 </Link>
               )
             })}
@@ -156,6 +158,7 @@ export const Header: React.FC = () => {
                   size="sm"
                   onClick={handleLogout}
                   className="text-white hover:bg-white/10 border border-white/20 backdrop-blur-sm shrink-0"
+                  style={{ fontSize: '12px' }}
                 >
                   <LogOut className="w-4 h-4 mr-1" />
                   Logout

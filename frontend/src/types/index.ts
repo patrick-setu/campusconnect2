@@ -360,3 +360,27 @@ export interface ClubApplication {
   created_at: string;
   email?: string;
 }
+
+// Marketplace types 
+export interface MarketplacePost {
+  id: string
+  creator_id: string
+  title: string
+  description: string
+  price?: string
+  category: 'selling' | 'lost' | 'buying'
+  contact: string
+  image_url?: string
+  creator_name: string 
+  created_at: string
+}
+
+// Marketplace form 
+export interface MarketplacePostForm {
+  title: string
+  description: string
+  price?: string
+  category: 'selling' | 'lost' | 'buying'
+  contact: string
+  image_url?: string
+}
