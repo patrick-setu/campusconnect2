@@ -21,6 +21,7 @@ export const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onCl
     about: "",
     interests: "",
     current_courses: "",
+    is_public: true,
   });
   const [saving, setSaving] = useState(false);
 
@@ -33,6 +34,7 @@ export const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onCl
         about: initial.about ?? "",
         interests: initial.interests?.join(", ") ?? "",
         current_courses: initial.current_courses?.join(", ") ?? "",
+        is_public: initial.is_public ?? true,
       });
     }
   }, [initial]);
@@ -76,6 +78,19 @@ export const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onCl
           <div>
             <label className="block text-sm mb-1">Interests (comma-separated)</label>
             <Input name="interests" value={(form.interests as string) || ""} onChange={handleChange} placeholder="AI, Web Dev, Design" />
+          </div>
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="is_public"
+              name="is_public"
+              checked={form.is_public}
+              onChange={(e) => setForm(prev => ({ ...prev, is_public: e.target.checked }))}
+              className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            />
+            <label htmlFor="is_public" className="text-sm">
+              Make profile visible to others
+            </label>
           </div>
         </div>
         <DialogActions>
