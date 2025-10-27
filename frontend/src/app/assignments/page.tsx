@@ -16,12 +16,27 @@ export default function AssignmentsPage() {
   const [assignments, setAssignments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
+  const [selectedAssignment, setSelectedAssignment] = useState<any>(null)
+  const [detailsOpen, setDetailsOpen] = useState(false)
 
   // form values for the add assignment modal
   const [course, setCourse] = useState("")
   const [title, setTitle] = useState("")
   const [details, setDetails] = useState("")
   const [dueDate, setDueDate] = useState("")
+
+  // validate and set due date
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    if (value) {
+      const year = value.split('-')[0]
+      if (year && year.length <= 4) {
+        setDueDate(value)
+      }
+    } else {
+      setDueDate(value)
+    }
+  }
 
   // load assignments for the current user
   const loadAssignments = async () => {
@@ -60,6 +75,33 @@ export default function AssignmentsPage() {
     } catch (err) {
       console.error(err)
       alert('Failed to create assignment')
+    }
+  }
+
+  // open assignment details modal
+  const handleAssignmentClick = (assignment: any) => {
+    setSelectedAssignment(assignment)
+    setDetailsOpen(true)
+  }
+
+  // delete an assignment
+  const handleDelete = async () => {
+    if (!selectedAssignment) return
+    
+    if (confirm('Are you sure you want to delete this assignment?')) {
+      try {
+        const res = await assignmentAPI.deleteAssignment(selectedAssignment.id)
+        if (res.success) {
+          setDetailsOpen(false)
+          setSelectedAssignment(null)
+          await loadAssignments()
+        } else {
+          alert(res.message)
+        }
+      } catch (err) {
+        console.error(err)
+        alert('Failed to delete assignment')
+      }
     }
   }
 
@@ -158,7 +200,11 @@ export default function AssignmentsPage() {
                     </div>
                     <div className="space-y-1">
                       {assignmentsForDay(day).map((a) => (
-                        <div key={a.id} className="text-sm bg-primary-50 text-primary-700 rounded px-2 py-1">
+                        <div 
+                          key={a.id} 
+                          className="text-sm bg-primary-50 text-primary-700 rounded px-2 py-1 cursor-pointer hover:bg-primary-100 transition-colors"
+                          onClick={() => handleAssignmentClick(a)}
+                        >
                           <div className="font-semibold">{a.title}</div>
                           {a.course_code && <div className="text-xs">{a.course_code}</div>}
                           <div className="text-xs text-gray-500">{format(parseISO(a.due_date), 'h:mm a')}</div>
@@ -182,7 +228,7 @@ export default function AssignmentsPage() {
                 <label className="block text-sm font-medium text-gray-700">Details</label>
                 <textarea className="block w-full px-3 py-2 border border-gray-300 rounded-md" value={details} onChange={(e) => setDetails(e.target.value)} />
                 <label className="block text-sm font-medium text-gray-700">Due Date</label>
-                <input type="datetime-local" className="block w-full px-3 py-2 border border-gray-300 rounded-md" value={dueDate} onChange={(e) => setDueDate(e.target.value)} required />
+                <input type="datetime-local" className="block w-full px-3 py-2 border border-gray-300 rounded-md" value={dueDate} onChange={handleDateChange} min="2000-01-01T00:00" max="9999-12-31T23:59" required />
               </div>
             </DialogContent>
             <DialogActions>
@@ -191,6 +237,39 @@ export default function AssignmentsPage() {
             </DialogActions>
           </form>
         </Dialog>
+
+        {/* assignment details modal */}
+        {selectedAssignment && (
+          <Dialog open={detailsOpen} onClose={() => setDetailsOpen(false)}>
+            <DialogTitle>Assignment Details</DialogTitle>
+            <DialogContent>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-lg">{selectedAssignment.title}</h3>
+                  {selectedAssignment.course_code && (
+                    <p className="text-sm text-gray-600">Course: {selectedAssignment.course_code}</p>
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Due Date:</p>
+                  <p className="text-sm text-gray-900">
+                    {format(parseISO(selectedAssignment.due_date), 'MMMM d, yyyy \'at\' h:mm a')}
+                  </p>
+                </div>
+                {selectedAssignment.details && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Details:</p>
+                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{selectedAssignment.details}</p>
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+            <DialogActions>
+              <Button type="button" variant="ghost" onClick={() => setDetailsOpen(false)}>Close</Button>
+              <Button type="button" variant="danger" onClick={handleDelete}>Delete</Button>
+            </DialogActions>
+          </Dialog>
+        )}
       </div>
     </Layout>
   )

@@ -507,6 +507,11 @@ export const assignmentAPI = {
   const response: AxiosResponse<ApiResponse<{ assignment: any }>> = await api.post('/assignments', data)
   return response.data
   },
+  // delete an assignment
+  deleteAssignment: async (id: string): Promise<ApiResponse> => {
+    const response: AxiosResponse<ApiResponse> = await api.delete(`/assignments/${id}`)
+    return response.data
+  },
 }
 
 

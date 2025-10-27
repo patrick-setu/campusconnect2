@@ -22,6 +22,7 @@ import {
   Briefcase,
   Calendar,
   ShoppingCart,
+  FileText,
 } from "lucide-react"
 
 // ADDED: Custom HouseHeart icon component
@@ -82,7 +83,7 @@ export const Header: React.FC = () => {
         { name: "Deals", href: "/deals", icon: DollarSign },
         { name: "Jobs/Voluntary", href: "/jobs", icon: Briefcase },
         { name: "Events", href: "/events", icon: Calendar },
-        { name: "Assignments", href: "/assignments", icon: Calendar },
+        { name: "Assignments", href: "/assignments", icon: FileText },
         { name: "Clubs", href: "/clubs", icon: HouseHeart },
         { name: "Marketplace", href: "/marketplace", icon: ShoppingCart },
       ]

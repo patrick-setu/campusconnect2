@@ -7,5 +7,6 @@ const router = express.Router()
 // all assignment routes require authentication
 router.get('/', authenticateToken, AssignmentController.getAssignments)
 router.post('/', authenticateToken, requireVerified, AssignmentController.createAssignment)
+router.delete('/:id', authenticateToken, AssignmentController.deleteAssignment)
 
 export default router

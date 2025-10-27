@@ -52,6 +52,33 @@ export class AssignmentController {
       res.status(500).json({ success: false, message: 'Internal server error' })
     }
   }
+
+  // delete an assignment if it is owned by user
+  static async deleteAssignment(req: AuthenticatedRequest, res: Response<ApiResponse>) {
+    try {
+      const userId = req.user!.id
+      const { id } = req.params
+
+      // check if assignment exists and belongs to user
+      const checkResult = await pool.query(
+        `SELECT * FROM assignments WHERE id = $1 AND user_id = $2`,
+        [id, userId],
+      )
+
+      if (checkResult.rows.length === 0) {
+        res.status(404).json({ success: false, message: 'Assignment not found or unauthorized' })
+        return
+      }
+
+      // delete the assignment
+      await pool.query(`DELETE FROM assignments WHERE id = $1`, [id])
+
+      res.json({ success: true, message: 'Assignment deleted' })
+    } catch (error) {
+      console.error('Delete assignment error:', error)
+      res.status(500).json({ success: false, message: 'Internal server error' })
+    }
+  }
 }
 
 export default AssignmentController
