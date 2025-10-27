@@ -495,6 +495,33 @@ export const eventAPI = {
   },
 }
 
+// assignment tracker API
+export const assignmentAPI = {
+  // fetch the current user's assignments
+  getAssignments: async (): Promise<ApiResponse<{ assignments: any[]; total: number }>> => {
+  const response: AxiosResponse<ApiResponse<{ assignments: any[]; total: number }>> = await api.get('/assignments')
+  return response.data
+  },
+  // create a new assignment (needs title and due date)
+  createAssignment: async (data: { course_code?: string; title: string; details?: string; due_date: string }) => {
+  const response: AxiosResponse<ApiResponse<{ assignment: any }>> = await api.post('/assignments', data)
+  return response.data
+  },
+  // update an assignment
+  updateAssignment: async (
+    id: string,
+    data: Partial<{ course_code: string; title: string; details: string; due_date: string }>,
+  ): Promise<ApiResponse<{ assignment: any }>> => {
+    const response: AxiosResponse<ApiResponse<{ assignment: any }>> = await api.put(`/assignments/${id}`, data)
+    return response.data
+  },
+  // delete an assignment
+  deleteAssignment: async (id: string): Promise<ApiResponse> => {
+    const response: AxiosResponse<ApiResponse> = await api.delete(`/assignments/${id}`)
+    return response.data
+  },
+}
+
 
 // Club API
 export const clubAPI = {
