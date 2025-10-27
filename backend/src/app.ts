@@ -20,6 +20,7 @@ import eventRoutes from "@/routes/events" // Added events routes
 import clubsRouter from "./routes/clubs";  // Added clubs routes
 import userRoutes from "@/routes/users" // add user routes
 import marketplaceRoutes from "@/routes/marketplace" // Added marketplace routes
+import assignmentsRoutes from "@/routes/assignments" // assignment routes
 
 
 // Load environment variables
@@ -81,8 +82,9 @@ app.use("/api/events", eventRoutes) // Added events API route
 app.use("/api/clubs", clubsRouter); // Added clubs API route
 app.use("/api/users", userRoutes) // add user api route
 app.use("/api/marketplace", marketplaceRoutes) // Added marketplace API route
+app.use("/api/assignments", assignmentsRoutes) // add assignment API route
 
-// 404 handler
+// catch 404 errors
 app.use("*", (req, res) => {
   res.status(404).json({
     success: false,

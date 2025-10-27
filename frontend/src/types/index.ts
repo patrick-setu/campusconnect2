@@ -384,3 +384,16 @@ export interface MarketplacePostForm {
   contact: string
   image_url?: string
 }
+
+// assignment types
+export interface Assignment {
+  id: string
+  user_id: string
+  course_code?: string
+  title: string
+  details?: string
+  due_date: string
+  completed: boolean
+  created_at: string
+  updated_at: string
+}
