@@ -17,8 +17,14 @@ export default function AssignmentsPage() {
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
   const [selectedAssignment, setSelectedAssignment] = useState<any>(null)
-  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [detailsOpen, setDetailsOpen] = useState(false) // assignment details modal open/closed
   const [showCalendar, setShowCalendar] = useState(false) // toggle calendar open/closed drop down
+  const [classFilter, setClassFilter] = useState<string>('all') // filter by class/course code
+  const [editMode, setEditMode] = useState(false) // edit in details modal
+  const [editCourse, setEditCourse] = useState("")
+  const [editTitle, setEditTitle] = useState("")
+  const [editDetails, setEditDetails] = useState("")
+  const [editDueDate, setEditDueDate] = useState("")
 
   // form values for the add assignment modal
   const [course, setCourse] = useState("")
@@ -58,6 +64,12 @@ export default function AssignmentsPage() {
     loadAssignments()
   }, [])
 
+  // options for class filter 
+  const classOptions = React.useMemo(() => {
+    const codes = Array.from(new Set(assignments.map((a) => a?.course_code).filter((v): v is string => !!v)))
+    return codes.sort()
+  }, [assignments])
+
   // save new assignment then refresh the list
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -83,6 +95,7 @@ export default function AssignmentsPage() {
   const handleAssignmentClick = (assignment: any) => {
     setSelectedAssignment(assignment)
     setDetailsOpen(true)
+    setEditMode(false) // open in view mode not edit 
   }
 
   // delete an assignment
@@ -136,8 +149,10 @@ export default function AssignmentsPage() {
   }
 
   // helper to get assignments by day
+  const passesClassFilter = (a: any) => classFilter === 'all' || a?.course_code === classFilter
   const assignmentsForDay = (day: Date) =>
     assignments.filter((a) => {
+      if (!passesClassFilter(a)) return false
       try {
         const d = parseISO(a.due_date)
         return isSameDay(d, day)
@@ -146,12 +161,78 @@ export default function AssignmentsPage() {
       }
     })
 
+  //  add current values to edit
+  const startEdit = () => {
+    if (!selectedAssignment) return
+    setEditCourse(selectedAssignment.course_code || "")
+    setEditTitle(selectedAssignment.title || "")
+    setEditDetails(selectedAssignment.details || "")
+    try {
+      setEditDueDate(format(parseISO(selectedAssignment.due_date), "yyyy-MM-dd'T'HH:mm"))
+    } catch {
+      setEditDueDate("")
+    }
+    setEditMode(true)
+  }
+
+  const handleEditDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    if (value) {
+      const year = value.split('-')[0]
+      if (year && year.length <= 4) setEditDueDate(value)
+    } else {
+      setEditDueDate(value)
+    }
+  }
+
+  // save changes
+  const handleEditSave = async () => {
+    if (!selectedAssignment) return
+    if (!editTitle || !editDueDate) {
+      alert('Title and due date are required')
+      return
+    }
+    try {
+      const payload: any = {
+        course_code: editCourse,
+        title: editTitle,
+        details: editDetails,
+        due_date: editDueDate,
+      }
+      const res = await assignmentAPI.updateAssignment(selectedAssignment.id, payload)
+      if (res.success) {
+        setEditMode(false)
+        setDetailsOpen(false)
+        setSelectedAssignment(null)
+        await loadAssignments()
+      } else {
+        alert(res.message)
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Failed to update assignment')
+    }
+  }
+
   return (
     <Layout>
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-semibold">Assignment Tracker</h1>
           <div className="flex items-center gap-2">
+            {/*  filter by class dropdown*/}
+            <label className="text-sm text-gray-600" htmlFor="classFilter">Class:</label>
+            <select
+              id="classFilter"
+              className="border border-gray-300 rounded px-2 py-1 text-sm bg-white"
+              value={classFilter}
+              onChange={(e) => setClassFilter(e.target.value)}
+            >
+              <option value="all">All</option>
+              {classOptions.map((code) => (
+                <option key={code} value={code}>{code}</option>
+              ))}
+            </select>
             <Button onClick={() => setOpen(true)} variant="primary">Add Assignment</Button>
           </div>
         </div>
@@ -161,12 +242,16 @@ export default function AssignmentsPage() {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold">Upcoming Assignments</h2>
             <span className="text-sm text-gray-600">{assignments.filter(a => {
-              try { return parseISO(a.due_date) >= new Date() } catch { return true }
+              if (!passesClassFilter(a)) return false
+              try { return parseISO(a.due_date) >= new Date() } catch { return false }
             }).length}</span>
           </div>
           <div className="divide-y rounded-md">
             {assignments
-              .filter(a => { try { return parseISO(a.due_date) >= new Date() } catch { return true } })
+              .filter(a => { 
+                if (!passesClassFilter(a)) return false
+                try { return parseISO(a.due_date) >= new Date() } catch { return false } 
+              })
               .sort((a, b) => {
                 try { return parseISO(a.due_date).getTime() - parseISO(b.due_date).getTime() } catch { return 0 }
               })
@@ -185,7 +270,10 @@ export default function AssignmentsPage() {
                   </div>
                 </div>
               ))}
-            {assignments.filter(a => { try { return parseISO(a.due_date) >= new Date() } catch { return true } }).length === 0 && (
+            {assignments.filter(a => { 
+              if (!passesClassFilter(a)) return false
+              try { return parseISO(a.due_date) >= new Date() } catch { return false } 
+            }).length === 0 && (
               <div className="text-sm text-gray-500">No upcoming assignments</div>
             )}
           </div>
@@ -290,32 +378,53 @@ export default function AssignmentsPage() {
         {/* assignment details modal */}
         {selectedAssignment && (
           <Dialog open={detailsOpen} onClose={() => setDetailsOpen(false)}>
-            <DialogTitle>Assignment Details</DialogTitle>
+            <DialogTitle>{editMode ? 'Edit Assignment' : 'Assignment Details'}</DialogTitle>
             <DialogContent>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-lg">{selectedAssignment.title}</h3>
-                  {selectedAssignment.course_code && (
-                    <p className="text-sm text-gray-600">Course: {selectedAssignment.course_code}</p>
+              {editMode ? (
+                <div className="grid grid-cols-1 gap-3">
+                  <Input label="Class / Course Code" value={editCourse} onChange={(e) => setEditCourse(e.target.value)} />
+                  <Input label="Assignment Title" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} required />
+                  <label className="block text-sm font-medium text-gray-700">Details</label>
+                  <textarea className="block w-full px-3 py-2 border border-gray-300 rounded-md" value={editDetails} onChange={(e) => setEditDetails(e.target.value)} />
+                  <label className="block text-sm font-medium text-gray-700">Due Date</label>
+                  <input type="datetime-local" className="block w-full px-3 py-2 border border-gray-300 rounded-md" value={editDueDate} onChange={handleEditDateChange} min="2000-01-01T00:00" max="9999-12-31T23:59" required />
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold text-lg">{selectedAssignment.title}</h3>
+                    {selectedAssignment.course_code && (
+                      <p className="text-sm text-gray-600">Course: {selectedAssignment.course_code}</p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Due Date:</p>
+                    <p className="text-sm text-gray-900">
+                      {format(parseISO(selectedAssignment.due_date), 'MMMM d, yyyy \'at\' h:mm a')}
+                    </p>
+                  </div>
+                  {selectedAssignment.details && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Details:</p>
+                      <p className="text-sm text-gray-900 whitespace-pre-wrap">{selectedAssignment.details}</p>
+                    </div>
                   )}
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-700">Due Date:</p>
-                  <p className="text-sm text-gray-900">
-                    {format(parseISO(selectedAssignment.due_date), 'MMMM d, yyyy \'at\' h:mm a')}
-                  </p>
-                </div>
-                {selectedAssignment.details && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Details:</p>
-                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{selectedAssignment.details}</p>
-                  </div>
-                )}
-              </div>
+              )}
             </DialogContent>
             <DialogActions>
-              <Button type="button" variant="ghost" onClick={() => setDetailsOpen(false)}>Close</Button>
-              <Button type="button" variant="danger" onClick={handleDelete}>Delete</Button>
+              {editMode ? (
+                <>
+                  <Button type="button" variant="ghost" onClick={() => setEditMode(false)}>Cancel</Button>
+                  <Button type="button" variant="primary" onClick={handleEditSave}>Save</Button>
+                </>
+              ) : (
+                <>
+                  <Button type="button" variant="ghost" onClick={() => setDetailsOpen(false)}>Close</Button>
+                  <Button type="button" variant="secondary" onClick={startEdit}>Edit</Button>
+                  <Button type="button" variant="danger" onClick={handleDelete}>Delete</Button>
+                </>
+              )}
             </DialogActions>
           </Dialog>
         )}

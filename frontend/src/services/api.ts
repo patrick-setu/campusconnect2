@@ -507,6 +507,14 @@ export const assignmentAPI = {
   const response: AxiosResponse<ApiResponse<{ assignment: any }>> = await api.post('/assignments', data)
   return response.data
   },
+  // update an assignment
+  updateAssignment: async (
+    id: string,
+    data: Partial<{ course_code: string; title: string; details: string; due_date: string }>,
+  ): Promise<ApiResponse<{ assignment: any }>> => {
+    const response: AxiosResponse<ApiResponse<{ assignment: any }>> = await api.put(`/assignments/${id}`, data)
+    return response.data
+  },
   // delete an assignment
   deleteAssignment: async (id: string): Promise<ApiResponse> => {
     const response: AxiosResponse<ApiResponse> = await api.delete(`/assignments/${id}`)
