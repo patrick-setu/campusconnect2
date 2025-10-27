@@ -370,3 +370,32 @@ export interface CreateAssignmentRequest {
   details?: string
   due_date: string
 }
+
+// Badge types
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  category: 'clubs' | 'notes' | 'marketplace';
+  tier: 'bronze' | 'silver' | 'gold';
+  requirement_count: number;
+  created_at: Date;
+}
+
+export interface UserBadge {
+  id: string;
+  user_id: string;
+  badge_id: string;
+  earned_at: Date;
+  badge?: Badge; // For joined queries
+}
+
+export interface BadgeProgress {
+  category: 'clubs' | 'notes' | 'marketplace';
+  current_count: number;
+  badges: {
+    badge: Badge;
+    earned: boolean;
+    earned_at?: Date;
+  }[];
+}

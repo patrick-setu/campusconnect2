@@ -21,6 +21,7 @@ import clubsRouter from "./routes/clubs";  // Added clubs routes
 import userRoutes from "@/routes/users" // add user routes
 import marketplaceRoutes from "@/routes/marketplace" // Added marketplace routes
 import assignmentsRoutes from "@/routes/assignments" // assignment routes
+import badgeRoutes from "@/routes/badges" // Added badges routes
 
 
 // Load environment variables
@@ -83,6 +84,7 @@ app.use("/api/clubs", clubsRouter); // Added clubs API route
 app.use("/api/users", userRoutes) // add user api route
 app.use("/api/marketplace", marketplaceRoutes) // Added marketplace API route
 app.use("/api/assignments", assignmentsRoutes) // add assignment API route
+app.use("/api/badges", badgeRoutes) // Added badges API route
 
 // catch 404 errors
 app.use("*", (req, res) => {

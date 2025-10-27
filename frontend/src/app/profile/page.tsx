@@ -2,21 +2,25 @@
 
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { userAPI } from "@/services/api";
-import type { UserProfile } from "@/types";
+import { userAPI, badgeAPI } from "@/services/api";
+import type { UserProfile, UserBadge } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Layout } from "@/components/layout/Layout";
 import { EditProfileDialog } from "@/components/profile/EditProfileDialog";
+import BadgeIcon from "@/components/ui/BadgeIcon";
+import BadgeModal from "@/components/ui/BadgeModal";
 import { useRouter } from "next/navigation";
-import { User, Mail, Calendar } from "lucide-react";
+import { User, Mail, Calendar, Award } from "lucide-react";
 
 // users profile page
 export default function ProfilePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
   const [open, setOpen] = useState(false);
+  const [badgeModalOpen, setBadgeModalOpen] = useState(false);
 
   // load profile when page loads
   useEffect(() => {
@@ -28,6 +32,13 @@ export default function ProfilePage() {
         userAPI.getMyProfile().then((res) => {
           if (res.success && res.data) {
             setProfile(res.data.profile);
+          }
+        });
+        
+        // fetch user badges
+        badgeAPI.getUserBadges(user.id).then((res) => {
+          if (res.success && res.data) {
+            setUserBadges(res.data.badges);
           }
         });
       }
@@ -81,6 +92,63 @@ export default function ProfilePage() {
               <Button onClick={() => setOpen(true)}>Edit Profile</Button>
             </div>
           </div>
+        </Card>
+
+        {/* badges section */}
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Award className="w-5 h-5 text-yellow-600" />
+              <h2 className="text-xl font-semibold text-gray-900">Badges</h2>
+            </div>
+            <Button 
+              onClick={() => setBadgeModalOpen(true)}>View All </Button>
+          </div>
+          
+          {userBadges.length > 0 ? (
+            <div className="flex items-center gap-4">
+              {/* Displays highest tier badge on the profile */}
+              {['clubs', 'notes', 'marketplace'].map(category => {
+                const categoryBadges = userBadges.filter(ub => ub.badge?.category === category);
+                // if the user has no badges yet in each catagory it gives a placeholder
+                if (categoryBadges.length === 0) return (
+                  <div key={category} className="flex flex-col items-center">
+                    <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center opacity-50">
+                      <span className="text-gray-400">
+                        {category === 'clubs' && '👥'}
+                        {category === 'notes' && '📝'}
+                        {category === 'marketplace' && '🛒'}
+                      </span>
+                    </div>
+                    <span className="text-xs text-gray-400 mt-1 capitalize">{category}</span>
+                  </div>
+                );
+
+                // Get the tier order (gold > silver > bronze) for when displaying it knows what badge to show
+                const tierOrder = { gold: 3, silver: 2, bronze: 1 };
+                const highestBadge = categoryBadges.reduce((highest, current) => 
+                  tierOrder[current.badge!.tier] > tierOrder[highest.badge!.tier] ? current : highest
+                );
+                
+                return (
+                  //displays the highest tier earned badge for each category
+                  <div key={category} className="flex flex-col items-center">
+                    <BadgeIcon
+                      badge={highestBadge.badge!}
+                      earned={true}
+                      earnedAt={highestBadge.earned_at}
+                    />
+                    <span className="text-xs text-gray-600 mt-1 capitalize">{category}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Award className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <span className="text-gray-500">No badges earned yet. Join clubs, upload notes, or post to marketplace to start earning badges!</span>
+            </div>
+          )}
         </Card>
 
         {/* about section */}
@@ -147,6 +215,12 @@ export default function ProfilePage() {
             setProfile(res.data.profile);
           }
         }}
+      />
+
+      <BadgeModal
+        open={badgeModalOpen}
+        onClose={() => setBadgeModalOpen(false)}
+        userId={user.id}
       />
     </Layout>
   );

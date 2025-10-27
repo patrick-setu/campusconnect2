@@ -2,6 +2,7 @@ import type { Request, Response } from "express"
 import pool from "@/config/database"
 import type { AuthenticatedRequest, ApiResponse } from "@/types"
 import { sendEmail } from "@/services/emailService"
+import { BadgeService } from "@/services/badgeService"
 
 export class ClubController {
   // GET clubs
@@ -266,6 +267,10 @@ export class ClubController {
           "INSERT INTO club_members (club_id, user_id, role) VALUES ($1, $2, 'member') ON CONFLICT DO NOTHING",
           [id, application.user_id]
         );
+        
+        // Check for new badges after joining club
+        const newBadges = await BadgeService.checkAndAwardBadges(application.user_id, 'clubs');
+        
         // Email accepted
         await sendEmail(
           email,
