@@ -384,3 +384,33 @@ export interface MarketplacePostForm {
   contact: string
   image_url?: string
 }
+
+
+// Badge types
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  category: 'clubs' | 'notes' | 'marketplace';
+  tier: 'bronze' | 'silver' | 'gold';
+  requirement_count: number;
+  created_at: string;
+}
+
+export interface UserBadge {
+  id: string;
+  user_id: string;
+  badge_id: string;
+  earned_at: string;
+  badge?: Badge;
+}
+
+export interface BadgeProgress {
+  category: 'clubs' | 'notes' | 'marketplace';
+  current_count: number;
+  badges: {
+    badge: Badge;
+    earned: boolean;
+    earned_at?: string;
+  }[];
+}

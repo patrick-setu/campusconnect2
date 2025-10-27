@@ -33,7 +33,6 @@ export class BadgeService {
           category: row.category,
           tier: row.tier,
           requirement_count: row.requirement_count,
-          icon_url: row.icon_url,
           created_at: row.created_at
         },
         earned: row.earned,
@@ -88,7 +87,6 @@ export class BadgeService {
       category: badge.category,
       tier: badge.tier,
       requirement_count: badge.requirement_count,
-      icon_url: badge.icon_url,
       created_at: badge.created_at
     }));
   }
@@ -97,7 +95,7 @@ export class BadgeService {
   static async getUserBadges(userId: string): Promise<UserBadge[]> {
     const query = `
       SELECT ub.*, b.name, b.description, b.category, b.tier, 
-             b.requirement_count, b.icon_url, b.created_at as badge_created_at
+             b.requirement_count, b.created_at as badge_created_at
       FROM user_badges ub
       JOIN badges b ON ub.badge_id = b.id
       WHERE ub.user_id = $1
@@ -118,7 +116,6 @@ export class BadgeService {
         category: row.category,
         tier: row.tier,
         requirement_count: row.requirement_count,
-        icon_url: row.icon_url,
         created_at: row.badge_created_at
       }
     }));

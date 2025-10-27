@@ -361,7 +361,6 @@ export interface Badge {
   category: 'clubs' | 'notes' | 'marketplace';
   tier: 'bronze' | 'silver' | 'gold';
   requirement_count: number;
-  icon_url?: string;
   created_at: Date;
 }
 
@@ -381,9 +380,4 @@ export interface BadgeProgress {
     earned: boolean;
     earned_at?: Date;
   }[];
-}
-
-// Badge request types
-export interface BadgeEarnedResponse {
-  newBadges: Badge[];
 }

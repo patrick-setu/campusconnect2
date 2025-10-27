@@ -20,6 +20,8 @@ import type {
   ClubPost,
   MarketplacePost,
   MarketplacePostForm,
+  UserBadge,
+  BadgeProgress,
 } from "@/types"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
@@ -587,6 +589,19 @@ export const marketplaceAPI = {
 
   deletePost: async (id: string): Promise<ApiResponse> => {
     const response: AxiosResponse<ApiResponse> = await api.delete(`/marketplace/${id}`)
+    return response.data
+  },
+}
+
+// Badge API 
+export const badgeAPI = {
+  getBadgeProgress: async (userId: string): Promise<ApiResponse<{ progress: BadgeProgress[] }>> => {
+    const response: AxiosResponse<ApiResponse<{ progress: BadgeProgress[] }>> = await api.get(`/badges/progress/${userId}`)
+    return response.data
+  },
+
+  getUserBadges: async (userId: string): Promise<ApiResponse<{ badges: UserBadge[] }>> => {
+    const response: AxiosResponse<ApiResponse<{ badges: UserBadge[] }>> = await api.get(`/badges/user/${userId}`)
     return response.data
   },
 }
