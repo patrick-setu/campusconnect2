@@ -18,6 +18,7 @@ export default function AssignmentsPage() {
   const [open, setOpen] = useState(false)
   const [selectedAssignment, setSelectedAssignment] = useState<any>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
+  const [showCalendar, setShowCalendar] = useState(false) // toggle calendar open/closed drop down
 
   // form values for the add assignment modal
   const [course, setCourse] = useState("")
@@ -155,67 +156,115 @@ export default function AssignmentsPage() {
           </div>
         </div>
 
-        <Card className="p-4">
-          {/* month navigation buttons */}
-          <div className="flex items-center justify-between mb-4">
-            <Button onClick={prevMonth} variant="ghost" className="p-2">
-              <span className="sr-only">Previous month</span>
-              ←
-            </Button>
-            <h2 className="text-lg font-semibold">
-              {format(currentDate, 'MMMM yyyy')}
-            </h2>
-            <Button onClick={nextMonth} variant="ghost" className="p-2">
-              <span className="sr-only">Next month</span>
-              →
-            </Button>
+  {/* Upcoming assignments list  */}
+        <Card className="mb-4 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold">Upcoming Assignments</h2>
+            <span className="text-sm text-gray-600">{assignments.filter(a => {
+              try { return parseISO(a.due_date) >= new Date() } catch { return true }
+            }).length}</span>
           </div>
-
-          <div className="grid grid-cols-7 gap-2 text-sm text-gray-600 mb-2">
-            <div className="text-center font-medium">Mon</div>
-            <div className="text-center font-medium">Tue</div>
-            <div className="text-center font-medium">Wed</div>
-            <div className="text-center font-medium">Thu</div>
-            <div className="text-center font-medium">Fri</div>
-            <div className="text-center font-medium">Sat</div>
-            <div className="text-center font-medium">Sun</div>
-          </div>
-
-          <div className="grid grid-cols-7 gap-2">
-            {weeks.map((week, wi) => (
-              <React.Fragment key={wi}>
-                {week.map((day) => (
-                  <div 
-                    key={day.toISOString()} 
-                    className={`border rounded p-2 min-h-[80px] relative ${
-                      isSameDay(day, new Date()) ? 'bg-blue-50' : 
-                      format(day, 'MM') !== format(currentDate, 'MM') ? 'bg-gray-50' : 'bg-white'
-                    }`}
-                  >
-                    <div className="text-xs text-gray-500 mb-1 flex justify-between items-center">
-                      <span>{format(day, 'd')}</span>
-                      {format(day, 'MM') !== format(currentDate, 'MM') && (
-                        <span className="text-xs text-gray-400">{format(day, 'MMM')}</span>
-                      )}
-                    </div>
-                    <div className="space-y-1">
-                      {assignmentsForDay(day).map((a) => (
-                        <div 
-                          key={a.id} 
-                          className="text-sm bg-primary-50 text-primary-700 rounded px-2 py-1 cursor-pointer hover:bg-primary-100 transition-colors"
-                          onClick={() => handleAssignmentClick(a)}
-                        >
-                          <div className="font-semibold">{a.title}</div>
-                          {a.course_code && <div className="text-xs">{a.course_code}</div>}
-                          <div className="text-xs text-gray-500">{format(parseISO(a.due_date), 'h:mm a')}</div>
-                        </div>
-                      ))}
-                    </div>
+          <div className="divide-y rounded-md">
+            {assignments
+              .filter(a => { try { return parseISO(a.due_date) >= new Date() } catch { return true } })
+              .sort((a, b) => {
+                try { return parseISO(a.due_date).getTime() - parseISO(b.due_date).getTime() } catch { return 0 }
+              })
+              .map((a) => (
+                <div
+                  key={a.id}
+                  className="flex items-center justify-between py-2 px-2 cursor-pointer hover:bg-gray-50 rounded"
+                  onClick={() => handleAssignmentClick(a)}
+                >
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">{a.title}</div>
+                    {a.course_code && <div className="text-xs text-gray-600 truncate">{a.course_code}</div>}
                   </div>
-                ))}
-              </React.Fragment>
-            ))}
+                  <div className="text-xs text-gray-500 whitespace-nowrap ml-3">
+                    {(() => { try { return format(parseISO(a.due_date), 'MMM d, h:mm a') } catch { return '' } })()}
+                  </div>
+                </div>
+              ))}
+            {assignments.filter(a => { try { return parseISO(a.due_date) >= new Date() } catch { return true } }).length === 0 && (
+              <div className="text-sm text-gray-500">No upcoming assignments</div>
+            )}
           </div>
+        </Card>
+
+        {/* collapsible calendar */}
+        <Card className="p-0 overflow-hidden">
+          <button
+            type="button"
+            className="w-full flex items-center justify-between px-4 py-2 text-left hover:bg-gray-50"
+            onClick={() => setShowCalendar((v) => !v)}
+          >
+            <span className="text-base font-semibold">Calendar</span>
+            <span className="text-sm text-gray-600">{showCalendar ? '▲' : '▼'}</span>
+          </button>
+          {showCalendar && (
+            <div className="p-4">
+              {/* month navigation buttons */}
+              <div className="flex items-center justify-between mb-4">
+                <Button onClick={prevMonth} variant="ghost" className="p-2">
+                  <span className="sr-only">Previous month</span>
+                  ←
+                </Button>
+                <h2 className="text-lg font-semibold">
+                  {format(currentDate, 'MMMM yyyy')}
+                </h2>
+                <Button onClick={nextMonth} variant="ghost" className="p-2">
+                  <span className="sr-only">Next month</span>
+                  →
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-7 gap-2 text-sm text-gray-600 mb-2">
+                <div className="text-center font-medium">Mon</div>
+                <div className="text-center font-medium">Tue</div>
+                <div className="text-center font-medium">Wed</div>
+                <div className="text-center font-medium">Thu</div>
+                <div className="text-center font-medium">Fri</div>
+                <div className="text-center font-medium">Sat</div>
+                <div className="text-center font-medium">Sun</div>
+              </div>
+
+              <div className="grid grid-cols-7 gap-2">
+                {weeks.map((week, wi) => (
+                  <React.Fragment key={wi}>
+                    {week.map((day) => (
+                      <div 
+                        key={day.toISOString()} 
+                        className={`border rounded p-2 min-h-[80px] relative ${
+                          isSameDay(day, new Date()) ? 'bg-blue-50' : 
+                          format(day, 'MM') !== format(currentDate, 'MM') ? 'bg-gray-50' : 'bg-white'
+                        }`}
+                      >
+                        <div className="text-xs text-gray-500 mb-1 flex justify-between items-center">
+                          <span>{format(day, 'd')}</span>
+                          {format(day, 'MM') !== format(currentDate, 'MM') && (
+                            <span className="text-xs text-gray-400">{format(day, 'MMM')}</span>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          {assignmentsForDay(day).map((a) => (
+                            <div 
+                              key={a.id} 
+                              className="text-sm bg-primary-50 text-primary-700 rounded px-2 py-1 cursor-pointer hover:bg-primary-100 transition-colors"
+                              onClick={() => handleAssignmentClick(a)}
+                            >
+                              <div className="font-semibold">{a.title}</div>
+                              {a.course_code && <div className="text-xs">{a.course_code}</div>}
+                              <div className="text-xs text-gray-500">{format(parseISO(a.due_date), 'h:mm a')}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          )}
         </Card>
 
         <Dialog open={open} onClose={() => setOpen(false)}>
