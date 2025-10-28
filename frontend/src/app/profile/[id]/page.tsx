@@ -1,5 +1,5 @@
 import React from "react";
-import { userAPI } from "@/services/api";
+import { cookies } from "next/headers";
 import type { UserProfile } from "@/types";
 import { Layout } from "@/components/layout/Layout";
 import { Card } from "@/components/ui/Card";
@@ -11,12 +11,18 @@ interface Props {
 
 // public profile view, shows someone else's profile
 export default async function PublicProfilePage({ params }: Props) {
-  //  call fetch directly
+  // fetch user data from backend
   const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-  const res = await fetch(`${base}/api/users/${params.id}`, { cache: "no-store" });
+  // pass auth token so backend (which requires auth) allows access to public profiles
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth_token")?.value;
+  const res = await fetch(`${base}/api/users/${params.id}`, {
+    cache: "no-store",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
   const data = await res.json();
   
-  // handle private or non existent profiles
+  // handle if profile is private or does not exist
   if (!data?.success || !data.data.profile) {
     return (
       <Layout>
@@ -32,6 +38,7 @@ export default async function PublicProfilePage({ params }: Props) {
   const user = data.data.user as { id: string; name: string; created_at: string };
   const profile = (data.data.profile || null) as UserProfile | null;
 
+  // display the user's public profile
   return (
     <Layout>
       <div className="max-w-4xl mx-auto space-y-6">

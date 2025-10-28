@@ -15,6 +15,8 @@ import { Users, PlusCircle, Search, Link as LinkIcon, MapPin, Calendar, Clock } 
 import { Trash2 } from "lucide-react";
 import { ClubDetailsModal } from "@/components/clubs/ClubDetailsModal";
 import ClubApplicationsModal from "@/components/clubs/ClubApplicationsModal";
+import { ClubMembersModal } from "@/components/clubs/ClubMembersModal";
+import ClubEventsModal from "@/components/clubs/ClubEventsModal";
 // UPDATED: Refactored meeting_date to club_date and meeting_time to club_time
 interface ClubForm {
   name: string;
@@ -34,6 +36,8 @@ export default function ClubsPage() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedClubId, setSelectedClubId] = useState<string | null>(null);
   const [applicationsClubId, setApplicationsClubId] = useState<string | null>(null);
+  const [membersClubId, setMembersClubId] = useState<string | null>(null);
+  const [eventsClub, setEventsClub] = useState<{ id: string; creatorId?: string } | null>(null);
 
   const {
     register,
@@ -285,12 +289,33 @@ export default function ClubsPage() {
           clubId={selectedClubId}
           open={!!selectedClubId}
           onClose={() => setSelectedClubId(null)}
+          onViewMembers={(clubId) => {
+            setSelectedClubId(null);
+            setMembersClubId(clubId);
+          }}
+          onViewEvents={(clubId, creatorId) => {
+            setSelectedClubId(null);
+            setEventsClub({ id: clubId, creatorId });
+          }}
         />
 
         <ClubApplicationsModal
           clubId={applicationsClubId}
           open={!!applicationsClubId}
           onClose={() => setApplicationsClubId(null)}
+        />
+
+        <ClubMembersModal
+          clubId={membersClubId}
+          open={!!membersClubId}
+          onClose={() => setMembersClubId(null)}
+        />
+
+        <ClubEventsModal
+          clubId={eventsClub?.id || null}
+          open={!!eventsClub}
+          onClose={() => setEventsClub(null)}
+          creatorId={eventsClub?.creatorId}
         />
       </div>
     </Layout>

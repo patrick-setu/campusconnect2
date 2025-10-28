@@ -2,23 +2,28 @@
 import React, { useEffect, useState } from "react";
 import { clubAPI } from "@/services/api";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ClubDetailsModalProps {
   clubId: string | null;
   open: boolean;
   onClose: () => void;
+  onViewMembers?: (clubId: string) => void;
+  onViewEvents?: (clubId: string, creatorId?: string) => void;
 }
 
-export function ClubDetailsModal({ clubId, open, onClose }: ClubDetailsModalProps) {
+export function ClubDetailsModal({ clubId, open, onClose, onViewMembers, onViewEvents }: ClubDetailsModalProps) {
   const [club, setClub] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { user } = useAuth();
 
   useEffect(() => {
+    // when modal opens, fetch the club info
     if (open && clubId) {
       setLoading(true);
       clubAPI.getClub(clubId).then(data => {
-        if (data.success) setClub(data.club);
+        if (data.success && data.data?.club) setClub(data.data.club);
         else setClub(null);
         setLoading(false);
       });
@@ -68,6 +73,32 @@ export function ClubDetailsModal({ clubId, open, onClose }: ClubDetailsModalProp
             >
               Join
             </button>
+            
+            {/* view Members button ( only displays for club admins) */}
+            {(user?.role === "admin" || user?.id === club.creator_id) && onViewMembers && (
+              <button
+                className="mt-2 w-full px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                type="button"
+                onClick={() => {
+                  onViewMembers(club.id);
+                }}
+              >
+                View Members
+              </button>
+            )}
+
+            {/* open events modal (anyone can view, only admins can post) */}
+            {onViewEvents && (
+              <button
+                className="mt-2 w-full px-6 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition"
+                type="button"
+                onClick={() => {
+                  onViewEvents(club.id, club.creator_id);
+                }}
+              >
+                Club Events
+              </button>
+            )}
           </>
         ) : (
           <div className="text-red-500">Club not found.</div>
