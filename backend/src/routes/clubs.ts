@@ -26,4 +26,7 @@ router.get("/:id/applications", authenticateToken, ClubController.getClubApplica
 // Accept/deny application
 router.post("/:id/applications/:appId", authenticateToken, ClubController.handleClubApplication);
 
+// get club members
+router.get("/:id/members", authenticateToken, ClubController.getClubMembers);
+
 export default router

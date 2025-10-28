@@ -600,6 +600,12 @@ export const clubAPI = {
     const response = await api.post(`/clubs/${clubId}/applications/${appId}`, { action });
     return response.data;
   },
+
+  // get club members 
+  getClubMembers: async (clubId: string): Promise<ApiResponse<{ members: any[]; total: number }>> => {
+    const response: AxiosResponse<ApiResponse<{ members: any[]; total: number }>> = await api.get(`/clubs/${clubId}/members`);
+    return response.data;
+  },
 }
 
 // Marketplace API

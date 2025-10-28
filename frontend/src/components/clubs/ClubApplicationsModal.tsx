@@ -6,7 +6,7 @@ import { clubAPI } from "@/services/api";
 import type { ClubApplication } from "@/types";
 
 interface Props {
-  clubId: string;
+  clubId: string | null;
   open: boolean;
   onClose: () => void;
 }
@@ -16,6 +16,7 @@ export default function ClubApplicationsModal({ clubId, open, onClose }: Props) 
   const [loading, setLoading] = useState(false);
 //loads applications 
   const loadApplications = async () => {
+    if (!clubId) return;
     setLoading(true);
     try {
       const res = await clubAPI.getClubApplications(clubId);
@@ -33,6 +34,7 @@ export default function ClubApplicationsModal({ clubId, open, onClose }: Props) 
 // handels accept / deny for club applications
 // updated backend and removes applicatoin from list on success
   const handleAction = async (appId: string, action: "accept" | "deny") => {
+    if (!clubId) return;
     try {
       await clubAPI.handleClubApplication(clubId, appId, action);
       toast.success(`Application ${action === "accept" ? "accepted" : "denied"}`);

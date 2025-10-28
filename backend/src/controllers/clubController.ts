@@ -157,9 +157,18 @@ export class ClubController {
         res.status(404).json({ success: false, message: "Club not found" })
         return
       }
-      res.json({ success: true, club: result.rows[0] })
+      res.json({ 
+        success: true, 
+        message: "Club retrieved successfully",
+        data: { 
+          club: result.rows[0],
+          members: [],
+          posts: []
+        } 
+      })
       return
     } catch (error) {
+      console.error("Get club error:", error)
       res.status(500).json({ success: false, message: "Internal server error" })
       return
     }
@@ -291,6 +300,62 @@ export class ClubController {
       return res.json({ success: true });
     } catch (err) {
       return res.status(500).json({ success: false, message: "Failed to process application" });
+    }
+  }
+
+  // get club members admin only
+  // get all members of a club (admin/creator only)
+  static async getClubMembers(req: AuthenticatedRequest, res: Response) {
+    try {
+      const clubId = req.params.id;
+      const userId = req.user!.id;
+
+      // check if club exists and user is admin
+      const clubResult = await pool.query("SELECT * FROM clubs WHERE id = $1", [clubId]);
+      if (!clubResult.rows.length) {
+        return res.status(404).json({ success: false, message: "Club not found" });
+      }
+
+      const club = clubResult.rows[0];
+      // use user id if creator id isnt found 
+      const creatorIdField = club.creator_id !== undefined ? club.creator_id : club.user_id;
+      if (creatorIdField !== userId && req.user!.role !== "admin") {
+        return res.status(403).json({ success: false, message: "Only club admins can view members" });
+      }
+
+      // fetch all members with their profile info
+      const membersResult = await pool.query(
+        `SELECT 
+          cm.id as membership_id,
+          cm.user_id,
+          cm.role,
+          cm.join_date,
+          u.name,
+          u.email,
+          up.display_name,
+          up.profile_image_url,
+          up.about,
+          up.interests,
+          up.current_courses,
+          up.is_public
+        FROM club_members cm
+        JOIN users u ON cm.user_id = u.id
+        LEFT JOIN user_profiles up ON u.id = up.user_id
+        WHERE cm.club_id = $1
+        ORDER BY cm.join_date DESC`,
+        [clubId]
+      );
+
+      return res.json({
+        success: true,
+        data: {
+          members: membersResult.rows,
+          total: membersResult.rows.length
+        }
+      });
+    } catch (error) {
+      console.error("Get club members error:", error);
+      return res.status(500).json({ success: false, message: "Failed to fetch members" });
     }
   }
 }
