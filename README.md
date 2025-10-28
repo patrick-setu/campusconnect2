@@ -49,17 +49,24 @@ Campus Connect NZ is a modern, full-stack web application designed exclusively f
 - **Study Notes Sharing**: Upload and access lecture notes, assignments, and study materials
 - **Course Reviews**: Comprehensive reviews with ratings, difficulty levels, and workload insights
 - **Lecturer Feedback**: Anonymous feedback system to improve teaching quality
+- **Assignment Tracker**: Track and manage course assignments with due dates
 
 ### 🤝 Community Features
 - **Student Networking**: Connect with fellow AUT students across different programs
+- **Clubs & Events**: Create and join student clubs, post club events with photos/videos
 - **Memorable Quotes**: Share and discover inspiring quotes from lecturers
 - **Student Deals**: Exclusive discounts and deals for AUT students with voting system
+- **Job Board**: Part-time, full-time, casual, and voluntary opportunities
+- **Marketplace**: Buy and sell textbooks, equipment, and other student items
+- **User Profiles**: Customizable profiles with courses, interests, and privacy controls
+- **Badges System**: Earn achievements for contributions (notes, reviews, clubs, marketplace)
 
 ### 🔒 Security & Privacy
 - **AUT Email Verification**: Restricted access using @autuni.ac.nz email addresses
 - **JWT Authentication**: Secure token-based authentication system
 - **Role-Based Access**: Student and admin role management
 - **Anonymous Feedback**: Privacy-protected lecturer feedback system
+- **Profile Privacy**: Control visibility of your profile information
 
 ## 🛠️ Tech Stack
 
@@ -73,11 +80,12 @@ Campus Connect NZ is a modern, full-stack web application designed exclusively f
 | **bcrypt** | Password hashing | Latest |
 | **Multer** | File upload handling | Latest |
 | **Nodemailer** | Email services | Latest |
+| **Helmet** | Security headers | Latest |
 
 ### Frontend Stack
 | Technology | Purpose | Version |
 |------------|---------|---------|
-| **Next.js** | React framework | 14+ |
+| **Next.js** | React framework | 15+ |
 | **React** | UI library | 18+ |
 | **TypeScript** | Type safety | 5.0+ |
 | **Tailwind CSS** | Styling framework | Latest |
@@ -158,11 +166,26 @@ GRANT ALL PRIVILEGES ON DATABASE campus_connect_nz TO campus_connect;
 \`\`\`bash
 cd database
 
-# Execute migrations in order
+# Execute ALL migrations in order (critical - run every single one!)
 psql -U campus_connect -d campus_connect_nz -f migrations/001_initial_schema.sql
 psql -U campus_connect -d campus_connect_nz -f migrations/002_seed_data.sql
 psql -U campus_connect -d campus_connect_nz -f migrations/003_add_lecturers_quotes_and_update_feedback.sql
 psql -U campus_connect -d campus_connect_nz -f migrations/003_deals_schema.sql
+psql -U campus_connect -d campus_connect_nz -f migrations/004_jobs_schema.sql
+psql -U campus_connect -d campus_connect_nz -f migrations/005_events_schema.sql
+psql -U campus_connect -d campus_connect_nz -f migrations/006_clubs_schema.sql
+psql -U campus_connect -d campus_connect_nz -f migrations/007_club_applications.sql
+psql -U campus_connect -d campus_connect_nz -f migrations/008_user_profiles.sql
+psql -U campus_connect -d campus_connect_nz -f migrations/009_marketplace_posts.sql
+psql -U campus_connect -d campus_connect_nz -f migrations/010_add_profile_visibility.sql
+psql -U campus_connect -d campus_connect_nz -f migrations/011_assignments_schema.sql
+psql -U campus_connect -d campus_connect_nz -f migrations/012_badges_system.sql
+
+# Verify all tables were created successfully
+psql -U campus_connect -d campus_connect_nz -c "\dt"
+
+# Go back to project root
+cd ..
 \`\`\`
 
 ### 2. Backend Setup
@@ -189,20 +212,31 @@ DB_NAME=campus_connect_nz
 DB_USER=campus_connect
 DB_PASSWORD=your_secure_password
 
-# Authentication
-JWT_SECRET=your_super_secure_jwt_secret_key_here
+# Authentication (generate a random 32+ character string)
+JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters
 JWT_EXPIRES_IN=7d
 
-# Email Configuration
+# Email Configuration (Gmail example with App Password)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
+SMTP_PASS=your_gmail_app_password
 FROM_EMAIL=noreply@campusconnectnz.com
+FROM_NAME=Campus Connect NZ
 
-# File Upload
-MAX_FILE_SIZE=10485760  # 10MB
-UPLOAD_PATH=./uploads
+# Frontend URL (for CORS)
+FRONTEND_URL=http://localhost:3000
+
+# File Upload Settings
+MAX_FILE_SIZE=10485760  # 10MB for notes
+UPLOAD_DIR=uploads
+ALLOWED_FILE_TYPES=pdf,doc,docx,ppt,pptx,txt,md
+ALLOWED_CLUB_MEDIA=jpg,jpeg,png,gif,webp,mp4,mov,webm
+MAX_MEDIA_FILE_SIZE=104857600  # 100MB for club images/videos
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000  # 15 minutes
+RATE_LIMIT_MAX_REQUESTS=100
 \`\`\`
 
 #### Start Backend Server
