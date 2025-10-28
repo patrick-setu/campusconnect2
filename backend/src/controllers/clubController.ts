@@ -358,4 +358,96 @@ export class ClubController {
       return res.status(500).json({ success: false, message: "Failed to fetch members" });
     }
   }
+
+  // list post for a club
+  static async getClubPosts(req: AuthenticatedRequest, res: Response<ApiResponse>): Promise<void> {
+    try {
+      const { id } = req.params as { id: string };
+      const result = await pool.query(
+        `SELECT cp.*, u.name as author_name
+         FROM club_posts cp
+         JOIN users u ON cp.user_id = u.id
+         WHERE cp.club_id = $1
+         ORDER BY cp.created_at DESC`,
+        [id]
+      );
+      res.json({ success: true, message: 'Club posts fetched', data: { posts: result.rows } });
+    } catch (err) {
+      console.error('getClubPosts error:', err);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  }
+
+  // create a post in a club if you are the owner of the club
+  static async createClubPost(req: AuthenticatedRequest, res: Response<ApiResponse>): Promise<void> {
+    try {
+      const { id } = req.params as { id: string };
+      const userId = req.user!.id;
+      const { title, content, is_pinned = false, is_announcement = false, media_urls = [] } = req.body || {};
+
+      // check if user is member or club creator
+      const authRes = await pool.query(
+        `SELECT 1 FROM clubs c WHERE c.id = $1 AND (c.user_id = $2 OR EXISTS (
+           SELECT 1 FROM club_members m WHERE m.club_id = c.id AND m.user_id = $2
+         ))`,
+        [id, userId]
+      );
+      if (!authRes.rows.length) {
+        res.status(403).json({ success: false, message: 'Only club members can post' });
+        return;
+      }
+
+      const insertRes = await pool.query(
+        `INSERT INTO club_posts (club_id, user_id, title, content, is_announcement, is_pinned)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING *`,
+        [id, userId, title, content, is_announcement, is_pinned]
+      );
+
+      const post = insertRes.rows[0];
+
+      if (Array.isArray(media_urls) && media_urls.length) {
+        const appended = `\n\nMedia:\n${media_urls.join('\n')}`;
+        const updatedRes = await pool.query(
+          `UPDATE club_posts SET content = content || $1 WHERE id = $2 RETURNING *`,
+          [appended, post.id]
+        );
+        res.status(201).json({ success: true, message: 'Post created', data: { post: updatedRes.rows[0] } });
+        return;
+      }
+
+      res.status(201).json({ success: true, message: 'Post created', data: { post } });
+    } catch (err) {
+      console.error('createClubPost error:', err);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  }
+
+  // delete a post if you are the club admin 
+  static async deleteClubPost(req: AuthenticatedRequest, res: Response<ApiResponse>): Promise<void> {
+    try {
+      const { id, postId } = req.params as { id: string; postId: string };
+      const userId = req.user!.id;
+      const userRole = req.user!.role;
+
+      const postRes = await pool.query('SELECT * FROM club_posts WHERE id = $1 AND club_id = $2', [postId, id]);
+      if (!postRes.rows.length) {
+        res.status(404).json({ success: false, message: 'Post not found' });
+        return;
+      }
+      const post = postRes.rows[0];
+      // only post owner or admin can delete
+      const clubRes = await pool.query('SELECT user_id FROM clubs WHERE id = $1', [id]);
+      const clubCreatorId = clubRes.rows[0]?.user_id;
+      if (post.user_id !== userId && userRole !== 'admin' && clubCreatorId !== userId) {
+        res.status(403).json({ success: false, message: 'Not authorized to delete this post' });
+        return;
+      }
+      await pool.query('DELETE FROM club_posts WHERE id = $1', [postId]);
+      res.json({ success: true, message: 'Post deleted' });
+    } catch (err) {
+      console.error('deleteClubPost error:', err);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  }
 }

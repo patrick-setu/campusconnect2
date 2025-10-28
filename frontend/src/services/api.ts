@@ -532,6 +532,7 @@ export const clubAPI = {
     return response.data
   },
 
+  // fetch a club
   getClub: async (id: string): Promise<ApiResponse<{ club: Club; members: ClubMember[]; posts: ClubPost[] }>> => {
     const response: AxiosResponse<ApiResponse<{ club: Club; members: ClubMember[]; posts: ClubPost[] }>> = await api.get(`/clubs/${id}`)
     return response.data
@@ -574,14 +575,29 @@ export const clubAPI = {
     return response.data
   },
 
-  createPost: async (clubId: string, data: { content: string; is_pinned?: boolean }): Promise<ApiResponse<{ post: ClubPost }>> => {
+  // create a club post, can upload photos and videos
+  createPost: async (
+    clubId: string,
+    data: { title?: string; content: string; is_pinned?: boolean; is_announcement?: boolean; media_urls?: string[] }
+  ): Promise<ApiResponse<{ post: ClubPost }>> => {
     const response: AxiosResponse<ApiResponse<{ post: ClubPost }>> = await api.post(`/clubs/${clubId}/posts`, data)
     return response.data
   },
 
+  // delete a club post if user is admin
   deletePost: async (clubId: string, postId: string): Promise<ApiResponse> => {
     const response: AxiosResponse<ApiResponse> = await api.delete(`/clubs/${clubId}/posts/${postId}`)
     return response.data
+  },
+
+  // upload photos and media 
+  uploadClubMedia: async (clubId: string, files: File[]): Promise<ApiResponse<{ urls: string[] }>> => {
+    const formData = new FormData();
+    files.forEach((f) => formData.append('media', f));
+    const response: AxiosResponse<ApiResponse<{ urls: string[] }>> = await api.post(`/clubs/${clubId}/posts/media`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
   },
 
   applyToClub: async (

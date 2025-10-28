@@ -32,6 +32,7 @@ export function ClubMembersModal({ clubId, open, onClose }: ClubMembersModalProp
   const router = useRouter();
 
   useEffect(() => {
+    // when opened with a valid id load members
     if (open && clubId) {
       loadMembers();
     } else {

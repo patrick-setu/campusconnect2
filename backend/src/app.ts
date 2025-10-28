@@ -30,7 +30,12 @@ dotenv.config()
 const app = express()
 
 // Security middleware
-app.use(helmet())
+// allow images or videos from  backend to be shown on the frontend 
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  }),
+)
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:3000",

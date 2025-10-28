@@ -16,6 +16,7 @@ import { Trash2 } from "lucide-react";
 import { ClubDetailsModal } from "@/components/clubs/ClubDetailsModal";
 import ClubApplicationsModal from "@/components/clubs/ClubApplicationsModal";
 import { ClubMembersModal } from "@/components/clubs/ClubMembersModal";
+import ClubEventsModal from "@/components/clubs/ClubEventsModal";
 // UPDATED: Refactored meeting_date to club_date and meeting_time to club_time
 interface ClubForm {
   name: string;
@@ -36,6 +37,7 @@ export default function ClubsPage() {
   const [selectedClubId, setSelectedClubId] = useState<string | null>(null);
   const [applicationsClubId, setApplicationsClubId] = useState<string | null>(null);
   const [membersClubId, setMembersClubId] = useState<string | null>(null);
+  const [eventsClub, setEventsClub] = useState<{ id: string; creatorId?: string } | null>(null);
 
   const {
     register,
@@ -291,6 +293,10 @@ export default function ClubsPage() {
             setSelectedClubId(null);
             setMembersClubId(clubId);
           }}
+          onViewEvents={(clubId, creatorId) => {
+            setSelectedClubId(null);
+            setEventsClub({ id: clubId, creatorId });
+          }}
         />
 
         <ClubApplicationsModal
@@ -303,6 +309,13 @@ export default function ClubsPage() {
           clubId={membersClubId}
           open={!!membersClubId}
           onClose={() => setMembersClubId(null)}
+        />
+
+        <ClubEventsModal
+          clubId={eventsClub?.id || null}
+          open={!!eventsClub}
+          onClose={() => setEventsClub(null)}
+          creatorId={eventsClub?.creatorId}
         />
       </div>
     </Layout>
